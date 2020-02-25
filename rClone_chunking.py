@@ -58,7 +58,7 @@ email_text="Hi, the latest backup encoutered errors.\nPlease review the logs in 
 buf_size = 2000000000 # 2 GB # Shown in bytes - how much RAM can be allocated to the zipping process.
 
 # Add extensions as you see fit. .rclone is an actual folder with chunks in it and does not need to be included.
-extensions_to_skip = [".bundle", ".tmp", ".temp", ".rclone"]
+extensions_to_skip = [".bundle", ".tmp", ".temp", ".rclone", ".DS_Store"]
 
 
 # =============
