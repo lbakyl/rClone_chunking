@@ -37,7 +37,7 @@ max_single_file_size = 1200000000 #1.2 GB # Shown in bytes. Define it a bit lowe
 
 # The rclone_service_name is how you define the service in your rclone config
 rclone_service_name = "box"
-rclone_program_location = "/usr/local/bin" # On Mac the default path is /usr/local/bin . For Windows enter it with double \\
+rclone_program_location = "/bin" # On Mac the default path is /usr/local/bin . For Windows enter it with double \\
 # Folder on the remote service to copy the files to
 rclone_dest_folder = ""
 # Do you want upload the log file to the remote service (e.g. Box) - yes/no
@@ -664,8 +664,6 @@ for currentpath, folders, files in os.walk(root_dir):
             # Check if the chunks for this large file already exist. If yes, skip the large file. Individual chunks will be verified with the cycle later.
 
             logging.debug("- Checking if the file was previously chunked (if file " + os.path.join(rclone_folder_with_chunks, file) + ".zip.001 -OR- " + os.path.join(rclone_folder_with_chunks, file) + ".001 exists.")
-
-            if fnmatch.fnmatch(candidate_for_chunk, file + "*.zip.*") or fnmatch.fnmatch(candidate_for_chunk, file + ".*"):
 
             if os.path.isfile(os.path.join(rclone_folder_with_chunks, file) + ".001" or os.path.isfile(os.path.join(rclone_folder_with_chunks, file) + ".zip.001")):
 
