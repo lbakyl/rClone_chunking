@@ -5,7 +5,7 @@
 # value are chunked into pieces and rcloned individually.
 #
 # Requirements: Python 3.x, Rclone (already set up via rclone config)
-# Tested on: Win 10, Mac OS (15.x - Catalina) and Linux (Synology DSM)
+# Tested on: Win 10, Mac OS (15.x - Catalina) and Linux (Debian, Synology DSM)
 #
 # Usage: Use on your NAS or other system to backup data to
 # a cloud-based service that has a limitation of max file
@@ -13,7 +13,7 @@
 # This means that extra space is required on the NAS to store the chunks.
 #
 # Features: Max file size can be changed even when large files
-# have already been chunked. Every time the script runs, every
+# have already been chunked. Every time the script runs every
 # file and chunk file is verified for integrity and a match with
 # the user-defined chunk size. If the verification fails
 # then the chunks are deleted (on source + destination) and
@@ -24,23 +24,24 @@
 # ==================================
 
 # Example paths on Windows
-# root_dir = "C:\\SWSETUP\\MY_DATA"
-# log_folder = "C:\\SWSETUP"
+#root_dir = "C:\\SWSETUP\\MY_DATA"
+#log_folder = "C:\\SWSETUP"
 
 # Example paths on Linux / Mac
 # root_dir = "/tmp/my_data"
 # log_folder = "/var/log"
 
+
 root_dir = ""
 log_folder = ""
-max_single_file_size = 1200000000 #1.2 GB # Shown in bytes. Define it a bit lower than the destination provider allows.
+max_single_file_size = 1200000000 #1200 MB # Shown in bytes. Defined a bit lower than what Box allows.
 
 # The rclone_service_name is how you define the service in your rclone config
 rclone_service_name = "box"
-rclone_program_location = "/bin" # On Mac the default path is /usr/local/bin . For Windows enter it with double \\
+rclone_program_location = "/usr/local/bin" # On Mac the default path is /usr/local/bin . For Windows enter it with double \\
 # Folder on the remote service to copy the files to
 rclone_dest_folder = ""
-# Do you want upload the log file to the remote service (e.g. Box) - yes/no
+# Do you want upload the log file to the same remote service (e.g. Box) - yes/no
 upload_logs_to_dest="yes"
 # destination folder where to place the logs
 dest_logs_path=""
@@ -58,8 +59,11 @@ email_text="Hi, the latest backup encoutered errors.\nPlease review the logs in 
 buf_size = 2000000000 # 2 GB # Shown in bytes - how much RAM can be allocated to the zipping process.
 
 # Add extensions as you see fit. .rclone is an actual folder with chunks in it and does not need to be included.
-extensions_to_skip = [".bundle", ".tmp", ".temp", ".rclone", ".DS_Store"]
+extensions_to_skip = [".bundle", ".tmp", ".temp", ".rclone"]
 
+
+
+extensions_to_skip = [".bundle", ".tmp", ".temp", ".rclone", ".DS_Store"]
 
 # =============
 # NOTES & TO-DO
@@ -404,15 +408,15 @@ def rclone_file():
                 logging.error("---- " + line)
         else:
             # xxx These two lines are just for troublehshooting
-            for line in rclone_copy_subprocess.stderr:
-                logging.debug("---- " + line)
+            #for line in rclone_copy_subprocess.stderr:
+            #    logging.debug("---- " + line)
             logging.info("--- Upload (or CRC check with " + rclone_service_name + ") was successfully finished.")
 
     except KeyboardInterrupt:
         logging.info("\nThe script was terminated by the admin. No logs will be emailed.")
         sys.exit()
     except:
-        critical_failure_text="Failed to rclone " + file + "to " + rclone_service_name + "."
+        critical_failure_text="Failed to rclone " + file + " to the " + rclone_service_name + " service."
         critical_failure(critical_failure_text)
 
 def critical_failure(critical_failure_text):
@@ -552,7 +556,7 @@ def verify_chunk_integrity():
 def upload_logs():
 
     logfile_year = datetime.now().strftime('%Y')
-    logfile_month = datetime.now().strftime('%M')
+    logfile_month = datetime.now().strftime('%m')
 
     log1_copy_subprocess = subprocess.Popen([os.path.join(rclone_program_location,'') +'rclone copy -vv "' + os.path.join(log_folder, logfile_all) + '" ' + rclone_service_name + ':"' + os.path.join(dest_logs_path, logfile_year, logfile_month) + '"'], shell=True, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
