@@ -56,13 +56,12 @@ email_to=["email@gmail.com"]
 email_subject="rClone encoutered issues"
 email_text="Hi, the latest backup encoutered errors.\nPlease review the logs in the attachment."
 
+# Define at what hour of the day should the script gracefully finished (0-23)
+hour_to_gracefully_finish="19"
+
 buf_size = 2000000000 # 2 GB # Shown in bytes - how much RAM can be allocated to the zipping process.
 
 # Add extensions as you see fit. .rclone is an actual folder with chunks in it and does not need to be included.
-extensions_to_skip = [".bundle", ".tmp", ".temp", ".rclone"]
-
-
-
 extensions_to_skip = [".bundle", ".tmp", ".temp", ".rclone", ".DS_Store"]
 
 # =============
@@ -449,7 +448,7 @@ def critical_failure(critical_failure_text):
             logging.error("ERROR! Uploading of log files to " + rclone_service_name + " failed!")
 
     logging.error("")
-    logging.error("Rclone Script is terminating.")
+    logging.error("rClone chunking script is terminating.")
     sys.exit()
 
 def scan_for_chunks():
@@ -614,6 +613,35 @@ def mail_logs():
         critical_failure_text="Could not email out the log files!"
         critical_failure()
 
+def graceful_finish():
+    logging.info("")
+
+    script_endtime = datetime.now().strftime('%Y-%m-%H at %H:%I:%M')
+
+    logging.info("Rcloning files to destination has finished on " + script_endtime + ".")
+    logging.info("")
+
+    logging.info("No. of files checked/rcloned: " + str(files_count))
+    logging.info("No. of files chunks checked/rcloned: " + str(files_chunk_count))
+    logging.info("No. of folders checked/rcloned: " + str(folders_count))
+    logging.info("Total size of files checked/rcloned: " + str(math.ceil(sum_size_count)) + " MB")
+
+    logging.info("")
+
+    if os.path.isfile(os.path.join(log_folder,logfile_errors)):
+        logging.info("Errors were detected when running the script. For this reason the log file will be emailed.")
+        logging.info("----- END OF LOG FILE ------")
+        mail_logs()
+    else:
+        logging.info("No errors were encoutered when running this script (thus no log file will be emailed.")
+        logging.info("----- END OF LOG FILE ------")
+
+        if upload_logs_to_dest.lower() == "yes":
+            upload_logs()
+
+    sys.exit()
+
+
 ## ==== ##
 ## MAIN ##
 ## ==== ##
@@ -638,6 +666,18 @@ for currentpath, folders, files in os.walk(root_dir):
 
     # For each file found in each folder, do the following:
     for file in files:
+
+        # If the hour to finish the script has been reached, then finish gracefully.
+        #current_hour =
+        try:
+            if (datetime.now().strftime('%H') >= hour_to_gracefully_finish ):
+                logging.info("")
+                logging.info("The script is finishing gracefully because it has reached the user-defined time to finish.")
+                graceful_finish()
+        # In case the variable was not defined (i.e. the script is not to terminate at certain hour), then skip
+        except NameError:
+            pass
+
         files_count += 1
         path_and_file = os.path.join(currentpath, file)
         rclone_folder_with_chunks = os.path.join(currentpath, ".rclone") # A sub-folder called .rclone contains the zipped chunked files.
@@ -722,27 +762,4 @@ for currentpath, folders, files in os.walk(root_dir):
                 file_to_rclone = file
                 rclone_file()
 
-logging.info("")
-
-script_endtime = datetime.now().strftime('%Y-%m-%H at %H:%I:%M')
-
-logging.info("Rcloning files to destination has finished on " + script_endtime + ".")
-logging.info("")
-
-logging.info("No. of files checked/rcloned: " + str(files_count))
-logging.info("No. of files chunks checked/rcloned: " + str(files_chunk_count))
-logging.info("No. of folders checked/rcloned: " + str(folders_count))
-logging.info("Total size of files checked/rcloned: " + str(math.ceil(sum_size_count)) + " MB")
-
-logging.info("")
-
-if os.path.isfile(os.path.join(log_folder,logfile_errors)):
-    logging.info("Errors were detected when running the script. For this reason the log file will be emailed.")
-    logging.info("----- END OF LOG FILE ------")
-    mail_logs()
-else:
-    logging.info("No errors were encoutered when running this script (thus no log file is emailed.")
-    logging.info("----- END OF LOG FILE ------")
-
-if upload_logs_to_dest.lower() == "yes":
-    upload_logs()
+graceful_finish()
