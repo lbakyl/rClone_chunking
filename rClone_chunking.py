@@ -56,7 +56,7 @@ email_to=["email@gmail.com"]
 email_subject="rClone encoutered issues"
 email_text="Hi, the latest backup encoutered errors.\nPlease review the logs in the attachment."
 
-# Define at what hour of the day should the script gracefully finished (0-23)
+# Define at what hour of the day should the script gracefully finished (0-23). Comment out if not needed.
 hour_to_gracefully_finish="19"
 
 buf_size = 2000000000 # 2 GB # Shown in bytes - how much RAM can be allocated to the zipping process.
