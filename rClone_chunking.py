@@ -112,7 +112,6 @@ try:
     import logging
     import subprocess
     from datetime import datetime
-    import psutil
     from sys import platform as _platform
     import smtplib
     import mimetypes
@@ -204,9 +203,10 @@ logging.debug("Buffer size for zipping: " + str(buf_size/1000000) + "MBs.")
 
 # Check if the process is already running and if yes, then skip or kill
 processname = os.path.basename(__file__)
+tmp = os.popen("ps -Af").read()
+proccount = tmp.count(processname)
 
-for proc in psutil.process_iter():
-	if (proc.name() == processname):
+if proccount > 0:
 
 		if (what_if_already_running == 1):
 			logging.info("Script is terminating because it is already running and the user-defined value 'what_if_already_running' is set to not proceed.")
@@ -215,7 +215,7 @@ for proc in psutil.process_iter():
 		if (what_if_already_running == 2):
 			logging.info("The same script is already running. The 'what_if_already_running' variable is set to kill the previous process. Attempting to kill the previous process...")
 			try:
-				proc.kill()
+				os.system('pkill '+ processname)
 			except:
 				logging.error("Could not stop the previously running script. Terminating...")
 				sys.exit()
