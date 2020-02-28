@@ -206,19 +206,19 @@ logging.debug("Buffer size for zipping: " + str(buf_size/1000000) + "MBs.")
 processname = os.path.basename(__file__)
 
 for proc in psutil.process_iter():
-    if (proc.name() == processname):
+	if (proc.name() == processname):
 
-	if (what_if_already_running == 1):
-		logging.info("Script is terminating because it is already running and the user-defined value 'what_if_already_running' is set to not proceed.")
-		sys.exit()
-	
-	if (what_if_already_running == 2):
-		logging.info("The same script is already running. The 'what_if_already_running' variable is set to kill the previous process. Attempting to kill the previous process...")
-		try:
-			proc.kill()
-		except:
-			logging.error("Could not stop the previously running script. Terminating...")
+		if (what_if_already_running == 1):
+			logging.info("Script is terminating because it is already running and the user-defined value 'what_if_already_running' is set to not proceed.")
 			sys.exit()
+	
+		if (what_if_already_running == 2):
+			logging.info("The same script is already running. The 'what_if_already_running' variable is set to kill the previous process. Attempting to kill the previous process...")
+			try:
+				proc.kill()
+			except:
+				logging.error("Could not stop the previously running script. Terminating...")
+				sys.exit()
 	
 
 def check_disk_space():
