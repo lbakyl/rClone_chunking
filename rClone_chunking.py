@@ -59,6 +59,9 @@ email_text="Hi, the latest backup encoutered errors.\nPlease review the logs in 
 # Define at what hour of the day should the script gracefully finished (0-23). Comment out if not needed.
 hour_to_gracefully_finish="19"
 
+# What to do if the script is already running in the background (0 = run on top, 1 = do not run, 2 = kill the previous process)
+what_if_already_running=1
+
 buf_size = 2000000000 # 2 GB # Shown in bytes - how much RAM can be allocated to the zipping process.
 
 # Add extensions as you see fit. .rclone is an actual folder with chunks in it and does not need to be included.
@@ -90,6 +93,7 @@ extensions_to_skip = [".bundle", ".tmp", ".temp", ".rclone", ".DS_Store"]
 #   - Since os.path.relpath() does not work on Mac OS, I needed to manually compare the paths - https://stackoverflow.com/questions/30683463/comparing-two-strings-and-returning-the-difference-python-3
 #   - Emailing attachments - https://stackoverflow.com/questions/25346001/add-excel-file-attachment-when-sending-python-email
 #   - Verify free disk space - https://stackoverflow.com/questions/4260116/find-size-and-free-space-of-the-filesystem-containing-a-given-file
+#   - Process name check - https://stackoverflow.com/questions/2940858/kill-process-by-name
 
 # ===== DO NOT MODIFY BEYOND THIS POINT UNLESS YOU ARE EXPERIENCED ===
 
@@ -108,6 +112,7 @@ try:
     import logging
     import subprocess
     from datetime import datetime
+    import psutil
     from sys import platform as _platform
     import smtplib
     import mimetypes
@@ -197,6 +202,24 @@ logging.debug("Rclone app folder: " + rclone_program_location)
 logging.debug("Extensions to skip: " + str(extensions_to_skip))
 logging.debug("Buffer size for zipping: " + str(buf_size/1000000) + "MBs.")
 
+# Check if the process is already running and if yes, then skip or kill
+processname = os.path.basename(__file__)
+
+for proc in psutil.process_iter():
+    if (proc.name() == processname):
+
+	if (what_if_already_running == 1):
+		logging.info("Script is terminating because it is already running and the user-defined value 'what_if_already_running' is set to not proceed.")
+		sys.exit()
+	
+	if (what_if_already_running == 2):
+		logging.info("The same script is already running. The 'what_if_already_running' variable is set to kill the previous process. Attempting to kill the previous process...")
+		try:
+			proc.kill()
+		except:
+			logging.error("Could not stop the previously running script. Terminating...")
+			sys.exit()
+	
 
 def check_disk_space():
     try:
