@@ -184,7 +184,7 @@ except:
     traceback.print_exc(limit=2, file=sys.stderr)
     sys.exit()
 
-script_starttime = datetime.now().strftime('%Y-%m-%H at %H:%I:%M')
+script_starttime = datetime.now().strftime('%Y-%m-%d at %H:%I:%M')
 logging.info("rClone chunking script")
 logging.info("======================")
 logging.info("Script was initiated on " + script_starttime + ".")
@@ -640,7 +640,7 @@ def mail_logs():
 def graceful_finish():
     logging.info("")
 
-    script_endtime = datetime.now().strftime('%Y-%m-%H at %H:%I:%M')
+    script_endtime = datetime.now().strftime('%Y-%m-%d at %H:%I:%M')
 
     logging.info("Rcloning files to destination has finished on " + script_endtime + ".")
     logging.info("")
