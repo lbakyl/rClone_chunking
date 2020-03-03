@@ -205,8 +205,9 @@ logging.debug("Buffer size for zipping: " + str(buf_size/1000000) + "MBs.")
 processname = os.path.basename(__file__)
 tmp = os.popen("ps -Af").read()
 proccount = tmp.count(processname)
-
-if proccount > 0:
+logging.info("Count of already running instances of this script (" + processname + "): " + str(proccount-1))
+# proccount will always be at least 1 since the query from ps -Af counts as 1 already
+if proccount > 1:
 
 		if (what_if_already_running == 1):
 			logging.info("Script is terminating because it is already running and the user-defined value 'what_if_already_running' is set to not proceed.")
